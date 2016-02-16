@@ -20,6 +20,7 @@ export class ImmutableQuery {
     selectedFilters:[],
     queries:[],
     filters:[],
+    queryFilters:[],
     _source:null,
     size:0
   }
@@ -30,8 +31,15 @@ export class ImmutableQuery {
 
   buildQuery(){
     let query:any = {}
+    query.query = {
+      filtered:{
+      }
+    }
     if(this.index.queries.length > 0) {
-      query.query = BoolMust(this.index.queries)
+      query.query.filtered.query = BoolMust(this.index.queries)
+    }
+    if(this.index.queryFilters.length > 0) {
+      query.query.filtered.filter = BoolMust(this.index.queryFilters)
     }
     if(this.index.filters.length > 0) {
       query.filter = BoolMust(this.index.filters)
@@ -87,14 +95,20 @@ export class ImmutableQuery {
     return this.index.selectedFilters
   }
   addAnonymousFilter(bool){
-    return this.addFilter(Utils.guid(), bool)
+    return this.addFilter(Utils.guid(), bool, false)
   }
 
-  addFilter(key, filter) {
-    return this.update({
-      filters: { $push: [filter] },
-      filtersMap:{ $merge:{ [key]:filter } }
-    })
+  addFilter(key, filter, isDisjunctive=true) {
+    if(isDisjunctive){
+      return this.update({
+        filters: { $push: [filter] },
+        filtersMap:{ $merge:{ [key]:filter } }
+      })
+    } else {
+      return this.update({
+        queryFilters:{$push:[filter]}
+      })
+    }
   }
 
   setAggs(aggs) {

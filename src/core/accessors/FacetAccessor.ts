@@ -114,7 +114,7 @@ export class FacetAccessor extends FilterBasedAccessor<ArrayState> {
     })
     var boolBuilder = this.getBoolBuilder()
     if(filterTerms.length > 0){
-      query = query.addFilter(this.uuid, boolBuilder(filterTerms))
+      query = query.addFilter(this.uuid, boolBuilder(filterTerms), this.isOrOperator())
         .addSelectedFilters(selectedFilters)
     }
 
